@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pointer — Know what's in it</title>
+  <meta name="description" content="Paste, photograph, or upload an ingredient list. Pointer tells you what each ingredient actually is — no scores, no verdicts, just clarity." />
+  <meta name="theme-color" content="#FAFAF8" />
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700;1,700;1,800;1,900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ink: #141312;
+      --paper: #FAFAF8;
+      --copper: #B5651D;
+      --copper-dark: #8f4f16;
+      --copper-bg: #F7EBDF;
+      --hairline: #E0DFDA;
+      --hairline-2: #EDECE8;
+      --text-secondary: #666663;
+      --text-muted: #999996;
+      --card-bg: #FFFFFF;
+      --radius-sm: 6px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+    }
+    html[data-theme="dark"] {
+      --ink: #FAFAF8;
+      --paper: #141312;
+      --copper: #C97A32;
+      --copper-dark: #B5651D;
+      --copper-bg: #2A2118;
+      --hairline: #33312C;
+      --hairline-2: #262420;
+      --text-secondary: #A8A59E;
+      --text-muted: #7A7770;
+      --card-bg: #1E1C19;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--paper);
+      color: var(--ink);
+      min-height: 100vh;
+      padding: 0;
+      font-size: 16px;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .wrap { max-width: 600px; margin: 0 auto; padding-bottom: 48px; }
+    .screen { display: none; }
+    .screen.active { display: block; }
+
+    /* HEADER */
+    .page-header { background: var(--paper); padding: 20px 20px 16px; border-bottom: 1px solid var(--hairline-2); position: sticky; top: 0; z-index: 10; }
+    .header-row { display: flex; align-items: center; justify-content: space-between; }
+    .wordmark { font-family: 'Inter', sans-serif; font-weight: 900; font-style: italic; font-size: 22px; letter-spacing: -0.3px; color: var(--ink); }
+    .header-actions { display: flex; align-items: center; gap: 8px; }
+    .icon-btn { width: 34px; height: 34px; border-radius: var(--radius-sm); background: var(--hairline-2); border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-secondary); font-size: 16px; }
+    .icon-btn:hover { background: var(--hairline); }
+    .header-btn { font-size: 13px; color: var(--text-secondary); background: var(--hairline-2); border: none; border-radius: var(--radius-sm); padding: 7px 13px; cursor: pointer; font-family: inherit; font-weight: 500; display: flex; align-items: center; gap: 5px; }
+    .header-btn:hover { background: var(--hairline); }
+
+    /* TAGLINE */
+    .tagline-band { padding: 9px 20px; text-align: center; border-bottom: 1px solid var(--hairline-2); }
+    .tagline-band p { font-size: 12px; font-weight: 600; color: var(--text-secondary); letter-spacing: 0.3px; }
+
+    /* PROFILE BAR */
+    .profile-bar { background: var(--card-bg); border-bottom: 1px solid var(--hairline-2); padding: 11px 16px; display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+    .pb-label { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.6px; font-weight: 700; }
+    .ptag { font-size: 12px; padding: 4px 11px; border-radius: 20px; background: var(--hairline-2); color: var(--ink); font-weight: 600; }
+    .ptag-avoid { font-size: 12px; padding: 4px 11px; border-radius: 20px; background: var(--copper-bg); color: var(--copper-dark); font-weight: 600; }
+    html[data-theme="dark"] .ptag-avoid { color: var(--copper); }
+    .edit-profile-btn { font-size: 12px; color: var(--ink); background: var(--paper); border: 1.5px solid var(--ink); border-radius: 20px; padding: 4px 12px; margin-left: auto; cursor: pointer; font-family: inherit; font-weight: 600; }
+    .edit-profile-btn:hover { background: var(--hairline-2); }
+
+    .personalize-bar { padding: 12px 16px; border-bottom: 1px solid var(--hairline-2); }
+    .btn-personalize { width: 100%; font-size: 13px; font-weight: 600; color: var(--ink); background: var(--card-bg); border: 1.5px dashed var(--hairline); border-radius: var(--radius-md); padding: 10px; cursor: pointer; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 6px; }
+    .btn-personalize:hover { border-color: var(--copper); color: var(--copper); }
+
+    /* PAGE BODY */
+    .page-body { padding: 16px; }
+
+    /* ONBOARDING */
+    .ob-progress { display: flex; gap: 5px; margin-bottom: 20px; }
+    .ob-dot { height: 4px; border-radius: 2px; flex: 1; background: var(--hairline); }
+    .ob-dot.done { background: var(--ink); }
+    .ob-top-actions { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+    .btn-back-ob { font-size: 13px; color: var(--text-secondary); background: none; border: none; cursor: pointer; font-family: inherit; display: flex; align-items: center; gap: 4px; font-weight: 500; }
+    .btn-back-ob:hover { color: var(--ink); }
+    .btn-back-ob.invisible { visibility: hidden; }
+    .btn-skip-all { font-size: 12px; color: var(--text-muted); background: none; border: none; cursor: pointer; font-family: inherit; text-decoration: underline; }
+    .btn-skip-all:hover { color: var(--text-secondary); }
+
+    .ob-headline-row { display: flex; align-items: baseline; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+    .ob-headline { font-size: 22px; font-weight: 700; color: var(--ink); line-height: 1.3; }
+    .ob-optional { font-size: 12px; color: var(--text-muted); font-weight: 500; font-style: italic; }
+    .ob-sub { font-size: 15px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 24px; }
+    .ob-tiles { display: flex; flex-wrap: wrap; gap: 9px; margin-bottom: 28px; }
+    .ob-tile { font-size: 14px; color: var(--text-secondary); border: 1.5px solid var(--hairline); border-radius: var(--radius-md); padding: 9px 16px; cursor: pointer; user-select: none; transition: all 0.15s; background: var(--card-bg); font-weight: 500; }
+    .ob-tile:hover { border-color: var(--ink); color: var(--ink); }
+    .ob-tile.sel { background: var(--ink); border-color: var(--ink); color: var(--paper); font-weight: 700; }
+    .ob-tile.sel-copper { background: var(--copper); border-color: var(--copper); color: white; font-weight: 700; }
+    .ob-actions { display: flex; align-items: center; gap: 12px; margin-top: 4px; }
+    .ob-summary-card { background: var(--card-bg); border: 1px solid var(--hairline-2); border-radius: var(--radius-lg); padding: 16px; margin-bottom: 12px; }
+    .ob-summary-label { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; font-weight: 700; }
+    .ob-summary-tags { display: flex; flex-wrap: wrap; gap: 7px; }
+    .ob-tag { font-size: 13px; padding: 4px 11px; border-radius: 20px; background: var(--hairline-2); color: var(--ink); font-weight: 600; }
+    .ob-tag-avoid { font-size: 13px; padding: 4px 11px; border-radius: 20px; background: var(--copper-bg); color: var(--copper-dark); font-weight: 600; }
+    html[data-theme="dark"] .ob-tag-avoid { color: var(--copper); }
+    .ob-tag-none { font-size: 14px; color: var(--text-muted); font-style: italic; }
+    .ob-ready-icon { width: 48px; height: 48px; border-radius: 50%; background: var(--hairline-2); display: flex; align-items: center; justify-content: center; margin-bottom: 16px; }
+
+    /* BUTTONS */
+    .btn-primary { font-size: 15px; padding: 12px 24px; border-radius: var(--radius-md); cursor: pointer; font-family: inherit; background: var(--ink); border: none; color: var(--paper); font-weight: 700; }
+    .btn-primary:hover { opacity: 0.85; }
+    .btn-ghost { font-size: 14px; color: var(--text-muted); background: none; border: none; cursor: pointer; font-family: inherit; padding: 0; font-weight: 500; }
+    .btn-ghost:hover { color: var(--text-secondary); }
+
+    /* BANNER */
+    .banner { background: var(--card-bg); border: 1px solid var(--hairline-2); border-radius: var(--radius-lg); padding: 18px; margin-bottom: 16px; }
+    .banner.hidden { display: none; }
+    .banner-title { font-size: 19px; font-weight: 700; color: var(--ink); margin-bottom: 8px; }
+    .banner-text { font-size: 14px; color: var(--text-secondary); line-height: 1.65; margin-bottom: 16px; }
+    .banner-dismiss { font-size: 13px; color: var(--paper); background: var(--ink); border: none; cursor: pointer; font-family: inherit; padding: 9px 18px; border-radius: var(--radius-md); font-weight: 700; }
+
+    /* INPUT */
+    .input-card { border: 1px solid var(--hairline-2); border-radius: var(--radius-lg); padding: 20px; margin-bottom: 16px; }
+    .input-label { font-size: 18px; font-weight: 700; color: var(--ink); margin-bottom: 4px; }
+    .input-sub { font-size: 14px; color: var(--text-muted); margin-bottom: 14px; line-height: 1.5; }
+    textarea { width: 100%; min-height: 110px; resize: vertical; font-size: 15px; font-family: inherit; border-radius: var(--radius-md); padding: 13px 14px; color: var(--ink); background: var(--paper); border: 1.5px solid var(--hairline); outline: none; }
+    textarea:focus { border-color: var(--ink); }
+    .or-divider { display: flex; align-items: center; gap: 10px; margin: 14px 0; color: var(--hairline); font-size: 14px; }
+    .or-divider::before, .or-divider::after { content: ''; flex: 1; height: 1px; background: var(--hairline); }
+    .photo-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .btn-photo { padding: 13px 10px; border: 1.5px dashed var(--hairline); border-radius: var(--radius-md); background: var(--paper); color: var(--text-secondary); font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 6px; }
+    .btn-photo:hover { border-color: var(--ink); color: var(--ink); }
+    .btn-analyze { width: 100%; background: var(--ink); color: var(--paper); border: none; border-radius: var(--radius-md); padding: 17px; font-size: 18px; font-weight: 700; cursor: pointer; font-family: inherit; margin-top: 14px; }
+    .btn-analyze:hover { opacity: 0.85; }
+    .demo-link { text-align: center; margin-top: 12px; font-size: 14px; color: var(--copper); cursor: pointer; font-weight: 600; background: none; border: none; font-family: inherit; display: block; width: 100%; }
+
+    /* LOADING */
+    .load-wrap { text-align: center; padding: 64px 20px; }
+    .load-icon { font-size: 32px; color: var(--copper); margin-bottom: 16px; animation: spin 1.2s linear infinite; display: inline-block; }
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    .load-title { font-size: 20px; font-weight: 700; margin-bottom: 6px; }
+    .load-sub { font-size: 14px; color: var(--text-muted); }
+    .load-steps { margin-top: 28px; display: flex; flex-direction: column; gap: 10px; max-width: 260px; margin-left: auto; margin-right: auto; }
+    .load-step { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--hairline); }
+    .load-step.done { color: var(--text-secondary); }
+
+    /* RESULTS */
+    .results-title { font-size: 21px; font-weight: 700; color: var(--ink); margin-top: 10px; }
+    .results-meta { font-size: 13px; color: var(--text-muted); margin-top: 3px; }
+
+    .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; margin-top: 16px; }
+    .stat-tile { border-radius: var(--radius-lg); padding: 16px; background: var(--card-bg); border: 1px solid var(--hairline-2); }
+    .stat-tile.copper { background: var(--copper-bg); border-color: var(--copper); }
+    .stat-n { font-size: 34px; font-weight: 700; line-height: 1; color: var(--ink); }
+    .stat-tile.copper .stat-n { color: var(--copper-dark); }
+    html[data-theme="dark"] .stat-tile.copper .stat-n { color: var(--copper); }
+    .stat-l { font-size: 13px; font-weight: 600; margin-top: 5px; color: var(--text-secondary); }
+    .stat-tile.copper .stat-l { color: var(--copper-dark); }
+    html[data-theme="dark"] .stat-tile.copper .stat-l { color: var(--copper); }
+
+    .section-label { font-size: 13px; font-weight: 700; color: var(--ink); text-transform: uppercase; letter-spacing: 0.8px; margin: 16px 0 10px; display: flex; align-items: center; gap: 6px; }
+
+    .result-tile { border-radius: var(--radius-lg); padding: 16px; margin-bottom: 10px; cursor: pointer; background: var(--card-bg); border: 1px solid var(--hairline-2); }
+    .result-tile.rt-flag { border-left: 3px solid var(--copper); border-radius: 0 var(--radius-lg) var(--radius-lg) 0; }
+    .result-tile.rt-positive { border-left: 3px solid var(--ink); border-radius: 0 var(--radius-lg) var(--radius-lg) 0; }
+    .tile-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+    .tile-name { font-size: 16px; font-weight: 700; color: var(--ink); }
+    .tile-plain { font-size: 13px; color: var(--text-muted); margin-top: 3px; font-weight: 500; }
+    .tile-badge { font-size: 11px; font-weight: 700; padding: 4px 11px; border-radius: 20px; white-space: nowrap; flex-shrink: 0; text-transform: uppercase; letter-spacing: 0.3px; }
+    .badge-flag { background: var(--copper); color: white; }
+    .badge-caution { background: transparent; color: var(--ink); border: 1.5px solid var(--ink); }
+    .badge-positive { background: var(--ink); color: var(--paper); }
+    .badge-neutral { background: var(--hairline-2); color: var(--text-secondary); }
+    .tile-desc { font-size: 14px; color: var(--text-secondary); line-height: 1.6; }
+    .tile-role { font-size: 13px; color: var(--text-muted); margin-top: 5px; }
+    .tile-note { font-size: 13px; margin-top: 10px; padding: 9px 12px; border-radius: var(--radius-sm); line-height: 1.5; font-weight: 500; display: flex; align-items: flex-start; gap: 6px; background: var(--hairline-2); color: var(--text-secondary); }
+    .tile-note.copper { background: var(--copper-bg); color: var(--copper-dark); }
+    html[data-theme="dark"] .tile-note.copper { color: var(--copper); }
+
+    /* ACTION BAR */
+    .action-bar { display: flex; align-items: center; gap: 8px; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--hairline-2); flex-wrap: wrap; }
+    .btn-action { font-size: 14px; padding: 9px 15px; border-radius: var(--radius-md); cursor: pointer; font-family: inherit; background: none; border: 1.5px solid var(--hairline); color: var(--text-secondary); display: inline-flex; align-items: center; gap: 6px; font-weight: 600; }
+    .btn-action:hover { border-color: var(--ink); color: var(--ink); }
+    .btn-action.saved { border-color: var(--ink); color: var(--ink); background: var(--hairline-2); }
+    .action-spacer { flex: 1; }
+    .rename-wrap { display: none; align-items: center; gap: 8px; margin-top: 10px; }
+    .rename-wrap.show { display: flex; }
+    .rename-input { flex: 1; font-size: 14px; font-family: inherit; border-radius: var(--radius-md); padding: 9px 12px; border: 1.5px solid var(--ink); color: var(--ink); background: var(--paper); outline: none; }
+    .btn-rename { font-size: 13px; padding: 9px 14px; border-radius: var(--radius-md); cursor: pointer; font-family: inherit; background: var(--ink); border: none; color: var(--paper); font-weight: 700; }
+
+    /* TOAST */
+    .toast { display: none; align-items: center; gap: 7px; font-size: 14px; border-radius: var(--radius-md); padding: 10px 14px; margin-top: 10px; font-weight: 500; }
+    .toast.show { display: flex; }
+    .toast-save { color: var(--ink); background: var(--hairline-2); }
+    .toast-copy { color: var(--ink); background: var(--hairline-2); }
+    .toast-error { color: var(--copper-dark); background: var(--copper-bg); }
+    html[data-theme="dark"] .toast-error { color: var(--copper); }
+
+    /* MEDICAL DISCLAIMER */
+    .medical-disclaimer { display: flex; align-items: flex-start; gap: 10px; background: var(--hairline-2); border: 1px solid var(--hairline); border-radius: var(--radius-lg); padding: 14px; margin-bottom: 20px; font-size: 14px; color: var(--text-secondary); line-height: 1.6; }
+
+    /* HISTORY */
+    .empty-state { text-align: center; padding: 48px 16px; color: var(--text-muted); }
+    .empty-state i { font-size: 36px; display: block; margin-bottom: 14px; color: var(--hairline); }
+    .empty-state p { font-size: 15px; line-height: 1.6; }
+    .scan-row { background: var(--card-bg); border: 1px solid var(--hairline-2); border-radius: var(--radius-lg); padding: 14px 16px; margin-bottom: 10px; display: flex; align-items: center; gap: 12px; cursor: pointer; }
+    .scan-row:hover { border-color: var(--hairline); }
+    .scan-row-name { font-size: 15px; font-weight: 700; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .scan-row-meta { font-size: 13px; color: var(--text-muted); margin-top: 3px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    .scan-flag-badge { font-size: 11px; padding: 2px 9px; border-radius: 20px; background: var(--copper-bg); color: var(--copper-dark); font-weight: 700; }
+    html[data-theme="dark"] .scan-flag-badge { color: var(--copper); }
+    .scan-del { font-size: 16px; color: var(--text-muted); background: none; border: none; cursor: pointer; padding: 4px; flex-shrink: 0; }
+    .scan-del:hover { color: var(--copper); }
+
+    /* CAMERA */
+    .photo-preview-wrap { margin-top: 12px; background: var(--card-bg); border: 1px solid var(--hairline-2); border-radius: var(--radius-lg); overflow: hidden; }
+    .photo-preview-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border-bottom: 1px solid var(--hairline-2); }
+    .photo-preview-label { font-size: 14px; font-weight: 700; color: var(--ink); }
+    .photo-retake-btn { font-size: 13px; color: var(--copper); background: none; border: none; cursor: pointer; font-family: inherit; display: flex; align-items: center; gap: 4px; font-weight: 600; }
+    .photo-preview-img { width: 100%; max-height: 280px; object-fit: cover; display: block; }
+    .photo-tip { font-size: 13px; color: var(--text-muted); padding: 9px 14px; display: flex; align-items: center; gap: 6px; }
+
+    /* INSTALL PROMPT */
+    .install-prompt { background: var(--card-bg); border: 1px solid var(--hairline); border-radius: var(--radius-lg); padding: 16px; margin-top: 16px; }
+    .install-prompt-body { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 12px; }
+    .install-prompt-title { font-size: 15px; font-weight: 700; color: var(--ink); margin-bottom: 3px; }
+    .install-prompt-sub { font-size: 14px; color: var(--text-secondary); line-height: 1.5; }
+    .install-prompt-actions { display: flex; align-items: center; gap: 12px; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ── ONBOARDING 1: DIET ── -->
+  <div class="screen active" id="s-ob0">
+    <div class="page-header">
+      <div class="header-row">
+        <div class="wordmark">POINTER</div>
+        <button class="icon-btn" id="theme-toggle-0"><i class="ti ti-moon"></i></button>
+      </div>
+    </div>
+    <div class="page-body">
+      <div class="ob-progress"><div class="ob-dot done"></div><div class="ob-dot"></div><div class="ob-dot"></div><div class="ob-dot"></div><div class="ob-dot"></div></div>
+      <div class="ob-top-actions">
+        <button class="btn-back-ob invisible"><i class="ti ti-arrow-left"></i> Back</button>
+        <button class="btn-skip-all" id="skip-all-btn">Skip personalization for now</button>
+      </div>
+      <div class="ob-headline-row"><div class="ob-headline">How would you describe how you eat?</div><div class="ob-optional">(optional)</div></div>
+      <div class="ob-sub">Pick the closest match. This helps Pointer understand the basics before we get more specific.</div>
+      <div class="ob-tiles" id="diet-tiles">
+        <div class="ob-tile" data-val="omnivore">Omnivore</div>
+        <div class="ob-tile" data-val="vegetarian">Vegetarian</div>
+        <div class="ob-tile" data-val="vegan">Vegan</div>
+        <div class="ob-tile" data-val="low-carb / keto">Low-carb / Keto</div>
+        <div class="ob-tile" data-val="mediterranean">Mediterranean</div>
+        <div class="ob-tile" data-val="GLP-1 / weight management">GLP-1 / weight management</div>
+        <div class="ob-tile" data-val="gluten-free">Gluten-free</div>
+        <div class="ob-tile" data-val="not applicable">Not applicable</div>
+      </div>
+      <div class="ob-actions"><button class="btn-primary" id="ob0-next">Next</button><button class="btn-ghost" id="ob0-skip">Skip this question</button></div>
+    </div>
+  </div>
+
+  <!-- ── ONBOARDING 2: CARE ── -->
+  <div class="screen" id="s-ob1">
+    <div class="page-header"><div class="header-row"><div class="wordmark">POINTER</div></div></div>
+    <div class="page-body">
+      <div class="ob-progress"><div class="ob-dot done"></div><div class="ob-dot done"></div><div class="ob-dot"></div><div class="ob-dot"></div><div class="ob-dot"></div></div>
+      <div class="ob-top-actions">
+        <button class="btn-back-ob" id="ob1-back"><i class="ti ti-arrow-left"></i> Back</button>
+        <button class="btn-skip-all" id="skip-all-btn-1">Skip personalization for now</button>
+      </div>
+      <div class="ob-headline-row"><div class="ob-headline">What do you care about?</div><div class="ob-optional">(optional)</div></div>
+      <div class="ob-sub">Pick everything that feels true. This helps Pointer highlight what matters most to you.</div>
+      <div class="ob-tiles" id="care-tiles">
+        <div class="ob-tile" data-val="blood sugar / diabetes">Blood sugar / diabetes</div>
+        <div class="ob-tile" data-val="weight loss">Weight loss</div>
+        <div class="ob-tile" data-val="muscle &amp; protein / bulking">Muscle &amp; protein / bulking</div>
+        <div class="ob-tile" data-val="heart health">Heart health</div>
+        <div class="ob-tile" data-val="gut health / digestion">Gut health / digestion</div>
+        <div class="ob-tile" data-val="energy &amp; focus">Energy &amp; focus</div>
+        <div class="ob-tile" data-val="inflammation">Inflammation</div>
+        <div class="ob-tile" data-val="longevity / healthy aging">Longevity / healthy aging</div>
+        <div class="ob-tile" data-val="clean ingredients">Clean ingredients</div>
+        <div class="ob-tile" data-val="just curious">Just curious</div>
+      </div>
+      <div class="ob-actions"><button class="btn-primary" id="ob1-next">Next</button><button class="btn-ghost" id="ob1-skip">Skip this question</button></div>
+    </div>
+  </div>
+
+  <!-- ── ONBOARDING 3: AVOID ── -->
+  <div class="screen" id="s-ob2">
+    <div class="page-header"><div class="header-row"><div class="wordmark">POINTER</div></div></div>
+    <div class="page-body">
+      <div class="ob-progress"><div class="ob-dot done"></div><div class="ob-dot done"></div><div class="ob-dot done"></div><div class="ob-dot"></div><div class="ob-dot"></div></div>
+      <div class="ob-top-actions">
+        <button class="btn-back-ob" id="ob2-back"><i class="ti ti-arrow-left"></i> Back</button>
+        <button class="btn-skip-all" id="skip-all-btn-2">Skip personalization for now</button>
+      </div>
+      <div class="ob-headline-row"><div class="ob-headline">Anything you're avoiding?</div><div class="ob-optional">(optional)</div></div>
+      <div class="ob-sub">Pointer will always flag these for you.</div>
+      <div class="ob-tiles" id="avoid-tiles">
+        <div class="ob-tile" data-val="gluten">Gluten</div>
+        <div class="ob-tile" data-val="dairy">Dairy</div>
+        <div class="ob-tile" data-val="soy">Soy</div>
+        <div class="ob-tile" data-val="eggs">Eggs</div>
+        <div class="ob-tile" data-val="tree nuts">Tree nuts</div>
+        <div class="ob-tile" data-val="peanuts">Peanuts</div>
+        <div class="ob-tile" data-val="shellfish">Shellfish</div>
+        <div class="ob-tile" data-val="added sugar">Added sugar</div>
+        <div class="ob-tile" data-val="high fructose corn syrup">High fructose corn syrup</div>
+        <div class="ob-tile" data-val="artificial sweeteners">Artificial sweeteners</div>
+        <div class="ob-tile" data-val="artificial dyes">Artificial dyes</div>
+        <div class="ob-tile" data-val="seed oils">Seed oils</div>
+        <div class="ob-tile" data-val="palm oil">Palm oil</div>
+        <div class="ob-tile" data-val="gums &amp; thickeners">Gums &amp; thickeners</div>
+      </div>
+      <div class="ob-actions"><button class="btn-primary" id="ob2-next">Next</button><button class="btn-ghost" id="ob2-skip">Skip this question</button></div>
+    </div>
+  </div>
+
+  <!-- ── ONBOARDING 4: CONDITIONS ── -->
+  <div class="screen" id="s-ob4">
+    <div class="page-header"><div class="header-row"><div class="wordmark">POINTER</div></div></div>
+    <div class="page-body">
+      <div class="ob-progress"><div class="ob-dot done"></div><div class="ob-dot done"></div><div class="ob-dot done"></div><div class="ob-dot done"></div><div class="ob-dot"></div></div>
+      <div class="ob-top-actions">
+        <button class="btn-back-ob" id="ob4-back"><i class="ti ti-arrow-left"></i> Back</button>
+        <button class="btn-skip-all" id="skip-all-btn-4">Skip personalization for now</button>
+      </div>
+      <div class="ob-headline-row"><div class="ob-headline">Managing a health condition through diet?</div><div class="ob-optional">(optional)</div></div>
+      <div class="ob-sub">Select any that apply. Pointer will flag relevant ingredients more specifically.</div>
+      <div class="ob-tiles" id="condition-tiles">
+        <div class="ob-tile" data-val="celiac disease">Celiac disease</div>
+        <div class="ob-tile" data-val="IBS / FODMAP sensitivity">IBS / FODMAP sensitivity</div>
+        <div class="ob-tile" data-val="type 2 diabetes">Type 2 diabetes</div>
+        <div class="ob-tile" data-val="crohn's disease / IBD">Crohn's disease / IBD</div>
+        <div class="ob-tile" data-val="GERD / acid reflux">GERD / acid reflux</div>
+        <div class="ob-tile" data-val="histamine intolerance">Histamine intolerance</div>
+        <div class="ob-tile" data-val="kidney disease">Kidney disease</div>
+        <div class="ob-tile" data-val="none / not applicable">None / not applicable</div>
+      </div>
+      <div class="medical-disclaimer">
+        <i class="ti ti-stethoscope" style="font-size:18px;flex-shrink:0;margin-top:1px"></i>
+        <div><strong>Pointer is for informational purposes only.</strong> It is not a medical tool and should never replace the advice of your doctor, dietitian, or other qualified health professional.</div>
+      </div>
+      <div class="ob-actions"><button class="btn-primary" id="ob4-next">Next</button><button class="btn-ghost" id="ob4-skip">Skip this question</button></div>
+    </div>
+  </div>
+
+  <!-- ── ONBOARDING 5: SUMMARY ── -->
+  <div class="screen" id="s-ob3">
+    <div class="page-header"><div class="header-row"><div class="wordmark">POINTER</div></div></div>
+    <div class="page-body">
+      <div class="ob-progress"><div class="ob-dot done"></div><div class="ob-dot done"></div><div class="ob-dot done"></div><div class="ob-dot done"></div><div class="ob-dot done"></div></div>
+      <div class="ob-top-actions"><button class="btn-back-ob" id="ob3-back"><i class="ti ti-arrow-left"></i> Back</button><span></span></div>
+      <div class="ob-ready-icon"><i class="ti ti-check" style="font-size:22px;color:var(--ink)"></i></div>
+      <div class="ob-headline">You're all set.</div>
+      <div class="ob-sub">Here's what Pointer will keep in mind. You can always update this later.</div>
+      <div class="ob-summary-card"><div class="ob-summary-label">How you eat</div><div class="ob-summary-tags" id="summary-diet"></div></div>
+      <div class="ob-summary-card"><div class="ob-summary-label">I care about</div><div class="ob-summary-tags" id="summary-care"></div></div>
+      <div class="ob-summary-card"><div class="ob-summary-label">Always flag</div><div class="ob-summary-tags" id="summary-avoid"></div></div>
+      <div class="ob-summary-card" id="summary-conditions-card" style="display:none"><div class="ob-summary-label">Health conditions</div><div class="ob-summary-tags" id="summary-conditions"></div></div>
+      <div class="ob-actions" style="margin-top:20px"><button class="btn-primary" id="ob3-done">Start reading labels ↗</button></div>
+    </div>
+  </div>
+
+  <!-- ── INPUT SCREEN ── -->
+  <div class="screen" id="s-input">
+    <div class="page-header">
+      <div class="header-row">
+        <div class="wordmark">POINTER</div>
+        <div class="header-actions">
+          <button class="icon-btn" id="theme-toggle"><i class="ti ti-moon"></i></button>
+          <button class="header-btn" id="go-history"><i class="ti ti-bookmark"></i> Saved</button>
+        </div>
+      </div>
+    </div>
+    <div class="tagline-band"><p>No points. No judgment. No fads. Just the facts.</p></div>
+    <div class="profile-bar" id="profile-bar-input" style="display:none">
+      <span class="pb-label">Lens</span>
+      <span id="profile-tags-input"></span>
+      <button class="edit-profile-btn" id="edit-profile-btn">Edit profile</button>
+    </div>
+    <div class="personalize-bar" id="personalize-bar-input" style="display:none">
+      <button class="btn-personalize" id="personalize-btn-input"><i class="ti ti-adjustments"></i> Personalize your results</button>
+    </div>
+    <div class="page-body">
+      <div class="banner" id="welcome-banner">
+        <div class="banner-title">Know what's actually in it.</div>
+        <div class="banner-text">Paste an ingredient list, take a photo, or upload one. Pointer tells you what each ingredient actually is — in plain English. That's it. <strong>Longer lists may take a moment.</strong></div>
+        <button class="banner-dismiss" id="banner-dismiss">Got it</button>
+      </div>
+      <div class="input-card">
+        <div class="input-label">Paste the ingredient list</div>
+        <div class="input-sub">Paste from a nutrition website, or type it in.</div>
+        <textarea id="ing-input" placeholder="e.g. Enriched Wheat Flour, Sugar, Palm Oil, Salt..."></textarea>
+        <div class="or-divider"><span>or</span></div>
+        <div class="photo-btns">
+          <button class="btn-photo" id="camera-btn"><i class="ti ti-camera"></i> Take a photo</button>
+          <button class="btn-photo" id="upload-btn"><i class="ti ti-upload"></i> Upload a photo</button>
+        </div>
+        <input type="file" id="camera-input" accept="image/*" capture="environment" style="display:none" />
+        <input type="file" id="upload-input" accept="image/*" style="display:none" />
+        <div class="photo-preview-wrap" id="photo-preview-wrap" style="display:none">
+          <div class="photo-preview-header"><span class="photo-preview-label">Label photo</span><button class="photo-retake-btn" id="photo-retake-btn"><i class="ti ti-refresh"></i> Retake</button></div>
+          <img id="photo-preview-img" class="photo-preview-img" alt="Food label photo" />
+          <div class="photo-tip"><i class="ti ti-info-circle"></i> Make sure the ingredient list is in focus and well-lit.</div>
+        </div>
+        <button class="btn-analyze" id="analyze-btn">Analyze ↗</button>
+        <button class="demo-link" id="demo-btn">Try an example</button>
+      </div>
+      <div class="toast toast-error" id="toast-error"><i class="ti ti-alert-circle"></i> <span id="error-msg">Something went wrong. Try again.</span></div>
+      <div class="install-prompt" id="install-prompt" style="display:none">
+        <div class="install-prompt-body"><i class="ti ti-device-mobile" style="font-size:20px;color:var(--copper);flex-shrink:0"></i><div><div class="install-prompt-title">Add Pointer to your home screen</div><div class="install-prompt-sub">Open Pointer like an app — no App Store needed.</div></div></div>
+        <div class="install-prompt-actions"><button class="btn-primary" id="install-btn" style="font-size:14px;padding:10px 18px">Add to home screen</button><button class="btn-ghost" id="install-dismiss">Not now</button></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── LOADING SCREEN ── -->
+  <div class="screen" id="s-loading">
+    <div class="page-header"><div class="header-row"><div class="wordmark">POINTER</div></div></div>
+    <div class="page-body">
+      <div class="load-wrap">
+        <i class="ti ti-loader load-icon"></i>
+        <div class="load-title">Reading the label...</div>
+        <div class="load-sub" id="load-sub">Breaking down each ingredient</div>
+        <div class="load-steps">
+          <div class="load-step" id="ls1"><i class="ti ti-circle"></i> Identifying ingredients</div>
+          <div class="load-step" id="ls2"><i class="ti ti-circle"></i> Looking each one up</div>
+          <div class="load-step" id="ls3"><i class="ti ti-circle"></i> Matching to your profile</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── RESULTS SCREEN ── -->
+  <div class="screen" id="s-results">
+    <div class="page-header">
+      <div class="header-row">
+        <div class="wordmark">POINTER</div>
+        <button class="header-btn" id="back-btn"><i class="ti ti-arrow-left"></i> New scan</button>
+      </div>
+      <div class="results-title" id="r-name">Ingredient breakdown</div>
+      <div class="results-meta" id="r-meta"></div>
+    </div>
+    <div class="profile-bar" id="profile-bar-results" style="display:none">
+      <span class="pb-label">Filtered for</span>
+      <span id="profile-tags-results"></span>
+    </div>
+    <div class="personalize-bar" id="personalize-bar-results" style="display:none">
+      <button class="btn-personalize" id="personalize-btn-results"><i class="ti ti-adjustments"></i> Personalize your results</button>
+    </div>
+    <div class="page-body">
+      <div class="stat-grid">
+        <div class="stat-tile"><div class="stat-n" id="r-total">—</div><div class="stat-l">Total</div></div>
+        <div class="stat-tile"><div class="stat-n" id="r-pos">—</div><div class="stat-l" id="r-pos-label">Works for you</div></div>
+        <div class="stat-tile"><div class="stat-n" id="r-caut">—</div><div class="stat-l">Heads up</div></div>
+        <div class="stat-tile copper"><div class="stat-n" id="r-flag">—</div><div class="stat-l">Worth noting</div></div>
+      </div>
+      <div id="flagged-section" style="display:none"><div class="section-label"><i class="ti ti-alert-circle" style="font-size:14px;color:var(--copper)"></i> Worth noting</div><div id="flagged-cards"></div></div>
+      <div id="positive-section" style="display:none"><div class="section-label"><i class="ti ti-circle-check" style="font-size:14px"></i> <span id="positive-label">Works for you</span></div><div id="positive-cards"></div></div>
+      <div id="caution-section" style="display:none"><div class="section-label"><i class="ti ti-info-circle" style="font-size:14px"></i> Heads up</div><div id="caution-cards"></div></div>
+      <div id="neutral-section" style="display:none"><div class="section-label"><i class="ti ti-minus" style="font-size:14px"></i> Neutral</div><div id="neutral-cards"></div></div>
+      <div class="action-bar">
+        <button class="btn-action" id="save-btn"><i class="ti ti-bookmark"></i> Save scan</button>
+        <button class="btn-action" id="share-btn"><i class="ti ti-copy"></i> Copy summary</button>
+        <span class="action-spacer"></span>
+        <button class="btn-ghost" id="new-scan-btn" style="font-size:14px;font-weight:600">+ New scan</button>
+      </div>
+      <div class="rename-wrap" id="rename-wrap"><input class="rename-input" id="rename-input" placeholder="Name this scan..." /><button class="btn-rename" id="rename-save-btn">Save</button></div>
+      <div class="toast toast-save" id="toast-save"><i class="ti ti-check"></i> <span id="toast-save-msg">Saved!</span></div>
+      <div class="toast toast-copy" id="toast-copy"><i class="ti ti-check"></i> Summary copied to clipboard</div>
+    </div>
+  </div>
+
+  <!-- ── HISTORY SCREEN ── -->
+  <div class="screen" id="s-history">
+    <div class="page-header">
+      <div class="header-row"><div class="wordmark">POINTER</div><button class="header-btn" id="history-back-btn"><i class="ti ti-arrow-left"></i> Back</button></div>
+      <div style="font-size:20px;font-weight:700;color:var(--ink);margin-top:10px">Saved scans</div>
+    </div>
+    <div class="page-body"><div id="history-list"></div></div>
+  </div>
+
+</div>
+
+<script>
+const DEMO = "Enriched Wheat Flour (wheat flour, niacin, reduced iron, thiamine mononitrate, riboflavin, folic acid), Protein Blend (vital wheat gluten, pea protein, rice protein), Semi-Sweet Chocolate Chips (unsweetened chocolate, sugar, cocoa butter, dextrose, natural vanilla extract), Inulin, Cane Sugar, Invert Sugar, Vegetable Glycerine, Palm Fruit Oil, Sunflower Lecithin or Canola Lecithin, Natural Flavor, Baking Soda, Salt, Xanthan Gum, Guar Gum.";
+
+let profile = JSON.parse(localStorage.getItem('pointer_profile') || 'null');
+let savedScans = JSON.parse(localStorage.getItem('pointer_scans') || '[]');
+let currentResults = null;
+let currentScanName = '';
+let currentScanSaved = false;
+let bannerDismissed = localStorage.getItem('pointer_banner') === '1';
+let capturedImageBase64 = null;
+let capturedImageType = null;
+let deferredInstallPrompt = null;
+let lastRawInputText = null;
+let lastRawImage = null;
+let pendingReanalyze = false;
+
+// ── THEME ──
+function applyTheme(t) {
+  document.documentElement.setAttribute('data-theme', t);
+  localStorage.setItem('pointer_theme', t);
+  document.querySelectorAll('#theme-toggle, #theme-toggle-0').forEach(btn => {
+    btn.innerHTML = t === 'dark' ? '<i class="ti ti-sun"></i>' : '<i class="ti ti-moon"></i>';
+  });
+}
+const savedTheme = localStorage.getItem('pointer_theme') || 'light';
+applyTheme(savedTheme);
+document.getElementById('theme-toggle').addEventListener('click', () => {
+  applyTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+});
+document.getElementById('theme-toggle-0').addEventListener('click', () => {
+  applyTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+});
+
+function setScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function init() {
+  if (bannerDismissed) document.getElementById('welcome-banner').classList.add('hidden');
+  renderProfileUI();
+  setScreen('s-input');
+}
+
+// ── ONBOARDING STATE ──
+let dietSelected = null, careSelected = [], avoidSelected = [], conditionsSelected = [];
+let obEntryScreen = 's-ob0';
+
+function resetObState() {
+  dietSelected = null; careSelected = []; avoidSelected = []; conditionsSelected = [];
+  document.querySelectorAll('.ob-tile').forEach(t => t.classList.remove('sel', 'sel-copper'));
+}
+
+function loadObStateFromProfile() {
+  dietSelected = profile ? profile.diet : null;
+  careSelected = profile ? [...profile.cares] : [];
+  avoidSelected = profile ? [...profile.avoids] : [];
+  conditionsSelected = profile && profile.conditions ? [...profile.conditions] : [];
+  document.querySelectorAll('#diet-tiles .ob-tile').forEach(t => t.classList.toggle('sel', dietSelected === t.dataset.val));
+  document.querySelectorAll('#care-tiles .ob-tile').forEach(t => t.classList.toggle('sel', careSelected.includes(t.dataset.val)));
+  document.querySelectorAll('#avoid-tiles .ob-tile').forEach(t => t.classList.toggle('sel-copper', avoidSelected.includes(t.dataset.val)));
+  document.querySelectorAll('#condition-tiles .ob-tile').forEach(t => t.classList.toggle('sel-copper', conditionsSelected.includes(t.dataset.val)));
+}
+
+document.querySelectorAll('#diet-tiles .ob-tile').forEach(t => {
+  t.addEventListener('click', () => {
+    document.querySelectorAll('#diet-tiles .ob-tile').forEach(o => o.classList.remove('sel'));
+    t.classList.add('sel'); dietSelected = t.dataset.val;
+  });
+});
+document.querySelectorAll('#care-tiles .ob-tile').forEach(t => {
+  t.addEventListener('click', () => {
+    const v = t.dataset.val;
+    if (careSelected.includes(v)) { careSelected = careSelected.filter(x => x !== v); t.classList.remove('sel'); }
+    else { careSelected.push(v); t.classList.add('sel'); }
+  });
+});
+document.querySelectorAll('#avoid-tiles .ob-tile').forEach(t => {
+  t.addEventListener('click', () => {
+    const v = t.dataset.val;
+    if (avoidSelected.includes(v)) { avoidSelected = avoidSelected.filter(x => x !== v); t.classList.remove('sel-copper'); }
+    else { avoidSelected.push(v); t.classList.add('sel-copper'); }
+  });
+});
+document.querySelectorAll('#condition-tiles .ob-tile').forEach(t => {
+  t.addEventListener('click', () => {
+    const v = t.dataset.val;
+    if (v === 'none / not applicable') {
+      conditionsSelected = [];
+      document.querySelectorAll('#condition-tiles .ob-tile').forEach(o => o.classList.remove('sel-copper'));
+      t.classList.add('sel-copper'); conditionsSelected = [v];
+    } else {
+      const noneEl = document.querySelector('#condition-tiles .ob-tile[data-val="none / not applicable"]');
+      if (noneEl) noneEl.classList.remove('sel-copper');
+      conditionsSelected = conditionsSelected.filter(x => x !== 'none / not applicable');
+      if (conditionsSelected.includes(v)) { conditionsSelected = conditionsSelected.filter(x => x !== v); t.classList.remove('sel-copper'); }
+      else { conditionsSelected.push(v); t.classList.add('sel-copper'); }
+    }
+  });
+});
+
+// Navigation
+document.getElementById('ob0-next').addEventListener('click', () => setScreen('s-ob1'));
+document.getElementById('ob0-skip').addEventListener('click', () => setScreen('s-ob1'));
+document.getElementById('ob1-next').addEventListener('click', () => setScreen('s-ob2'));
+document.getElementById('ob1-skip').addEventListener('click', () => setScreen('s-ob2'));
+document.getElementById('ob1-back').addEventListener('click', () => setScreen('s-ob0'));
+document.getElementById('ob2-next').addEventListener('click', () => setScreen('s-ob4'));
+document.getElementById('ob2-skip').addEventListener('click', () => setScreen('s-ob4'));
+document.getElementById('ob2-back').addEventListener('click', () => setScreen('s-ob1'));
+document.getElementById('ob4-next').addEventListener('click', showSummary);
+document.getElementById('ob4-skip').addEventListener('click', showSummary);
+document.getElementById('ob4-back').addEventListener('click', () => setScreen('s-ob2'));
+document.getElementById('ob3-back').addEventListener('click', () => setScreen('s-ob4'));
+
+// Skip personalization entirely
+function skipAllPersonalization() {
+  profile = null;
+  localStorage.removeItem('pointer_profile');
+  renderProfileUI();
+  pendingReanalyze = false;
+  setScreen('s-input');
+}
+document.getElementById('skip-all-btn').addEventListener('click', skipAllPersonalization);
+document.getElementById('skip-all-btn-1').addEventListener('click', skipAllPersonalization);
+document.getElementById('skip-all-btn-2').addEventListener('click', skipAllPersonalization);
+document.getElementById('skip-all-btn-4').addEventListener('click', skipAllPersonalization);
+
+function showSummary() {
+  const realConds = conditionsSelected.filter(c => c !== 'none / not applicable');
+  document.getElementById('summary-diet').innerHTML = dietSelected ? `<span class="ob-tag">${dietSelected}</span>` : '<span class="ob-tag-none">Nothing selected</span>';
+  document.getElementById('summary-care').innerHTML = careSelected.length ? careSelected.map(v => `<span class="ob-tag">${v}</span>`).join('') : '<span class="ob-tag-none">Nothing selected</span>';
+  document.getElementById('summary-avoid').innerHTML = avoidSelected.length ? avoidSelected.map(v => `<span class="ob-tag-avoid">${v}</span>`).join('') : '<span class="ob-tag-none">Nothing selected</span>';
+  const condCard = document.getElementById('summary-conditions-card');
+  if (realConds.length) { condCard.style.display = 'block'; document.getElementById('summary-conditions').innerHTML = realConds.map(v => `<span class="ob-tag-avoid">${v}</span>`).join(''); }
+  else { condCard.style.display = 'none'; }
+  setScreen('s-ob3');
+}
+
+document.getElementById('ob3-done').addEventListener('click', () => {
+  const realConds = conditionsSelected.filter(c => c !== 'none / not applicable');
+  profile = { diet: dietSelected, cares: careSelected, avoids: avoidSelected, conditions: realConds };
+  localStorage.setItem('pointer_profile', JSON.stringify(profile));
+  renderProfileUI();
+
+  if (pendingReanalyze && (lastRawInputText || lastRawImage)) {
+    pendingReanalyze = false;
+    if (lastRawImage) analyze(null, lastRawImage.base64, lastRawImage.type);
+    else analyze(lastRawInputText);
+  } else {
+    setScreen('s-input');
+  }
+});
+
+function enterOnboarding(fromReanalyze) {
+  loadObStateFromProfile();
+  pendingReanalyze = !!fromReanalyze;
+  setScreen('s-ob0');
+}
+
+document.getElementById('edit-profile-btn').addEventListener('click', () => enterOnboarding(false));
+document.getElementById('personalize-btn-input').addEventListener('click', () => enterOnboarding(false));
+document.getElementById('personalize-btn-results').addEventListener('click', () => enterOnboarding(true));
+
+// ── PROFILE UI ──
+function renderProfileUI() {
+  const hasProfile = profile && (profile.diet || profile.cares.length || profile.avoids.length || (profile.conditions && profile.conditions.length));
+  document.getElementById('profile-bar-input').style.display = hasProfile ? 'flex' : 'none';
+  document.getElementById('personalize-bar-input').style.display = hasProfile ? 'none' : 'block';
+  document.getElementById('profile-bar-results').style.display = hasProfile ? 'flex' : 'none';
+  document.getElementById('personalize-bar-results').style.display = hasProfile ? 'none' : 'block';
+  if (!hasProfile) return;
+  const conditions = profile.conditions && profile.conditions.length ? profile.conditions.map(c => `<span class="ptag-avoid">${c}</span>`).join('') : '';
+  const tags = [
+    profile.diet && profile.diet !== 'not applicable' ? `<span class="ptag">${profile.diet}</span>` : '',
+    ...profile.cares.map(c => `<span class="ptag">${c}</span>`),
+    ...profile.avoids.map(a => `<span class="ptag-avoid">no ${a}</span>`),
+    conditions
+  ].join('');
+  document.getElementById('profile-tags-input').innerHTML = tags;
+  document.getElementById('profile-tags-results').innerHTML = tags;
+}
+
+// ── BANNER ──
+document.getElementById('banner-dismiss').addEventListener('click', () => {
+  bannerDismissed = true; localStorage.setItem('pointer_banner', '1');
+  document.getElementById('welcome-banner').classList.add('hidden');
+});
+
+// ── CAMERA & UPLOAD ──
+document.getElementById('camera-btn').addEventListener('click', () => document.getElementById('camera-input').click());
+document.getElementById('upload-btn').addEventListener('click', () => document.getElementById('upload-input').click());
+
+async function handleImageFile(file) {
+  if (!file) return;
+  const resized = await resizeImage(file, 1200);
+  capturedImageBase64 = resized.base64;
+  capturedImageType = resized.type;
+  const img = document.getElementById('photo-preview-img');
+  img.src = `data:${resized.type};base64,${resized.base64}`;
+  document.getElementById('photo-preview-wrap').style.display = 'block';
+  document.getElementById('ing-input').value = '';
+}
+document.getElementById('camera-input').addEventListener('change', async (e) => { await handleImageFile(e.target.files[0]); e.target.value = ''; });
+document.getElementById('upload-input').addEventListener('change', async (e) => { await handleImageFile(e.target.files[0]); e.target.value = ''; });
+document.getElementById('photo-retake-btn').addEventListener('click', () => {
+  capturedImageBase64 = null; capturedImageType = null;
+  document.getElementById('photo-preview-wrap').style.display = 'none';
+  document.getElementById('photo-preview-img').src = '';
+  document.getElementById('camera-input').click();
+});
+
+async function resizeImage(file, maxWidth) {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let w = img.width, h = img.height;
+        if (w > maxWidth) { h = Math.round(h * maxWidth / w); w = maxWidth; }
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+        resolve({ base64: dataUrl.split(',')[1], type: 'image/jpeg' });
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+// ── LOADING ──
+function animateSteps(cb) {
+  const steps = ['ls1','ls2','ls3']; let i = 0;
+  document.querySelectorAll('.load-step').forEach(s => { s.classList.remove('done'); s.querySelector('i').className = 'ti ti-circle'; });
+  function next() {
+    if (i < steps.length) {
+      const el = document.getElementById(steps[i]);
+      el.classList.add('done'); el.querySelector('i').className = 'ti ti-check'; i++;
+      if (i < steps.length) setTimeout(next, 700);
+    }
+  }
+  setTimeout(next, 300); setTimeout(cb, 2200);
+}
+
+// ── ANALYZE ──
+async function analyze(text, imageBase64, imageType) {
+  if (imageBase64) { lastRawImage = { base64: imageBase64, type: imageType }; lastRawInputText = null; }
+  else { lastRawInputText = text; lastRawImage = null; }
+
+  setScreen('s-loading');
+  document.getElementById('toast-error').classList.remove('show');
+  const loadSub = document.getElementById('load-sub');
+  if (imageBase64) loadSub.textContent = "Reading the label photo...";
+  else loadSub.textContent = text.length > 400 ? "That's a long list — this may take a bit longer" : "Breaking down each ingredient";
+
+  const dietPart = profile && profile.diet && profile.diet !== 'not applicable' ? profile.diet + ', ' : '';
+  const goals = dietPart + (profile ? profile.cares.join(', ') : '');
+  const avoids = profile ? profile.avoids.join(', ') : '';
+  const conditions = profile && profile.conditions && profile.conditions.length ? profile.conditions.join(', ') : '';
+
+  let apiDone = false, animDone = false, results = null;
+  function tryRender() { if (apiDone && animDone && results) renderResults(results); }
+  animateSteps(() => { animDone = true; tryRender(); });
+
+  try {
+    const payload = imageBase64 ? { imageBase64, imageType, goals, avoids, conditions } : { ingredients: text, goals, avoids, conditions };
+    const res = await fetch('/.netlify/functions/analyze', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    results = data; apiDone = true; tryRender();
+  } catch (err) {
+    setScreen('s-input');
+    document.getElementById('error-msg').textContent = 'Something went wrong. Try again.';
+    const errEl = document.getElementById('toast-error');
+    errEl.classList.add('show'); setTimeout(() => errEl.classList.remove('show'), 4000);
+  }
+}
+
+document.getElementById('analyze-btn').addEventListener('click', () => {
+  if (capturedImageBase64) {
+    analyze(null, capturedImageBase64, capturedImageType);
+    capturedImageBase64 = null; capturedImageType = null;
+    document.getElementById('photo-preview-wrap').style.display = 'none';
+  } else {
+    const text = document.getElementById('ing-input').value.trim();
+    if (!text) return; analyze(text);
+  }
+});
+document.getElementById('demo-btn').addEventListener('click', () => {
+  capturedImageBase64 = null;
+  document.getElementById('photo-preview-wrap').style.display = 'none';
+  document.getElementById('ing-input').value = DEMO; analyze(DEMO);
+});
+
+// ── RENDER RESULTS ──
+function badgeClass(s) { return {positive:'badge-positive',caution:'badge-caution',flag:'badge-flag',neutral:'badge-neutral',safe:'badge-positive'}[s]||'badge-neutral'; }
+function badgeLabel(s, hasProfile) {
+  if (s === 'positive' || s === 'safe') return hasProfile ? 'Works for you' : 'No worries';
+  return {caution:'Heads up',flag:'Worth noting',neutral:'Neutral'}[s]||'Neutral';
+}
+function tileClass(s) { return {positive:'rt-positive',flag:'rt-flag',safe:'rt-positive'}[s]||''; }
+function noteClass(s) { return s === 'flag' ? 'copper' : ''; }
+
+function makeCard(ing, id, hasProfile) {
+  const div = document.createElement('div');
+  div.className = 'result-tile ' + tileClass(ing.personal_status);
+  div.innerHTML = `
+    <div class="tile-top">
+      <div><div class="tile-name">${ing.name}</div>${ing.plain_name && ing.plain_name.toLowerCase() !== ing.name.toLowerCase() ? `<div class="tile-plain">${ing.plain_name}</div>` : ''}</div>
+      <span class="tile-badge ${badgeClass(ing.personal_status)}">${badgeLabel(ing.personal_status, hasProfile)}</span>
+    </div>
+    <div class="tile-desc">${ing.explanation}</div>
+    ${ing.role ? `<div class="tile-role">Role: ${ing.role}</div>` : ''}
+    ${ing.personal_note ? `<div class="tile-note ${noteClass(ing.personal_status)}"><i class="ti ti-point-filled" style="font-size:12px;flex-shrink:0;margin-top:3px"></i>${ing.personal_note}</div>` : ''}`;
+  return div;
+}
+
+function renderResults(data) {
+  currentResults = data; currentScanSaved = false;
+  currentScanName = 'Scan — ' + new Date().toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+  const hasProfile = profile && (profile.diet || profile.cares.length || profile.avoids.length || (profile.conditions && profile.conditions.length));
+
+  const ingredients = data.ingredients || [];
+  const flagged = ingredients.filter(i => i.personal_status === 'flag');
+  const positive = ingredients.filter(i => i.personal_status === 'positive' || i.personal_status === 'safe');
+  const caution = ingredients.filter(i => i.personal_status === 'caution');
+  const neutral = ingredients.filter(i => i.personal_status === 'neutral');
+
+  document.getElementById('r-name').textContent = currentScanName;
+  document.getElementById('r-meta').textContent = ingredients.length + ' ingredients analyzed';
+  document.getElementById('r-total').textContent = ingredients.length;
+  document.getElementById('r-pos').textContent = positive.length;
+  document.getElementById('r-pos-label').textContent = hasProfile ? 'Works for you' : 'No worries';
+  document.getElementById('positive-label').textContent = hasProfile ? 'Works for you' : 'No worries';
+  document.getElementById('r-caut').textContent = caution.length;
+  document.getElementById('r-flag').textContent = flagged.length;
+
+  const saveBtn = document.getElementById('save-btn');
+  saveBtn.classList.remove('saved'); saveBtn.innerHTML = '<i class="ti ti-bookmark"></i> Save scan';
+  document.getElementById('rename-wrap').classList.remove('show');
+  document.getElementById('toast-save').classList.remove('show');
+  document.getElementById('toast-copy').classList.remove('show');
+
+  ['flagged','positive','caution','neutral'].forEach(t => {
+    document.getElementById(t+'-section').style.display = 'none';
+    document.getElementById(t+'-cards').innerHTML = '';
+  });
+
+  if (flagged.length) { document.getElementById('flagged-section').style.display = 'block'; flagged.forEach((ing,i) => document.getElementById('flagged-cards').appendChild(makeCard(ing,'f'+i,hasProfile))); }
+  if (positive.length) { document.getElementById('positive-section').style.display = 'block'; positive.forEach((ing,i) => document.getElementById('positive-cards').appendChild(makeCard(ing,'p'+i,hasProfile))); }
+  if (caution.length) { document.getElementById('caution-section').style.display = 'block'; caution.forEach((ing,i) => document.getElementById('caution-cards').appendChild(makeCard(ing,'c'+i,hasProfile))); }
+  if (neutral.length) { document.getElementById('neutral-section').style.display = 'block'; neutral.forEach((ing,i) => document.getElementById('neutral-cards').appendChild(makeCard(ing,'n'+i,hasProfile))); }
+
+  renderProfileUI();
+  setScreen('s-results');
+}
+
+// ── SAVE ──
+document.getElementById('save-btn').addEventListener('click', () => {
+  if (currentScanSaved || !currentResults) return;
+  currentScanSaved = true;
+  const scan = { id: Date.now(), name: currentScanName, date: new Date().toISOString(), total: currentResults.ingredients.length, flags: currentResults.ingredients.filter(i => i.personal_status==='flag').length, data: currentResults };
+  savedScans.unshift(scan); localStorage.setItem('pointer_scans', JSON.stringify(savedScans));
+  const saveBtn = document.getElementById('save-btn');
+  saveBtn.classList.add('saved'); saveBtn.innerHTML = '<i class="ti ti-bookmark"></i> Saved';
+  document.getElementById('rename-wrap').classList.add('show');
+  document.getElementById('rename-input').value = currentScanName;
+  document.getElementById('rename-input').focus();
+  showToast('toast-save', 'Saved as "' + currentScanName + '"');
+});
+
+document.getElementById('rename-save-btn').addEventListener('click', () => {
+  const newName = document.getElementById('rename-input').value.trim();
+  if (!newName) return;
+  currentScanName = newName;
+  if (savedScans.length) { savedScans[0].name = newName; localStorage.setItem('pointer_scans', JSON.stringify(savedScans)); }
+  document.getElementById('r-name').textContent = newName;
+  document.getElementById('rename-wrap').classList.remove('show');
+  showToast('toast-save', 'Renamed to "' + newName + '"');
+});
+
+// ── SHARE ──
+document.getElementById('share-btn').addEventListener('click', () => {
+  if (!currentResults) return;
+  const flags = currentResults.ingredients.filter(i => i.personal_status==='flag');
+  const text = `Pointer breakdown: ${currentScanName}\n${currentResults.ingredients.length} ingredients · ${flags.length} worth noting${flags.length ? ' (' + flags.map(f=>f.name).join(', ') + ')' : ''}`;
+  if (navigator.clipboard) navigator.clipboard.writeText(text).then(() => showToast('toast-copy', null));
+  else showToast('toast-copy', null);
+});
+
+// ── HISTORY ──
+function renderHistory() {
+  const el = document.getElementById('history-list');
+  if (!savedScans.length) {
+    el.innerHTML = `<div class="empty-state"><i class="ti ti-bookmark"></i><p>No saved scans yet.<br>Analyze an ingredient list and tap "Save scan" to keep it here.</p></div>`;
+    return;
+  }
+  el.innerHTML = '';
+  savedScans.forEach((scan, idx) => {
+    const row = document.createElement('div'); row.className = 'scan-row';
+    const d = new Date(scan.date).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+    row.innerHTML = `
+      <div style="flex:1;min-width:0">
+        <div class="scan-row-name">${scan.name}</div>
+        <div class="scan-row-meta"><span>${d}</span><span>${scan.total} ingredients</span>${scan.flags ? `<span class="scan-flag-badge">${scan.flags} worth noting</span>` : ''}</div>
+      </div>
+      <button class="scan-del" onclick="deleteScan(${idx},event)"><i class="ti ti-trash"></i></button>`;
+    row.addEventListener('click', () => { renderResults(scan.data); });
+    el.appendChild(row);
+  });
+}
+function deleteScan(idx, e) {
+  e.stopPropagation(); savedScans.splice(idx, 1);
+  localStorage.setItem('pointer_scans', JSON.stringify(savedScans)); renderHistory();
+}
+document.getElementById('go-history').addEventListener('click', () => { renderHistory(); setScreen('s-history'); });
+document.getElementById('history-back-btn').addEventListener('click', () => setScreen('s-input'));
+document.getElementById('back-btn').addEventListener('click', () => setScreen('s-input'));
+document.getElementById('new-scan-btn').addEventListener('click', () => { document.getElementById('ing-input').value = ''; setScreen('s-input'); });
+
+// ── TOAST ──
+function showToast(id, msg) {
+  const el = document.getElementById(id);
+  if (msg) { const sp = el.querySelector('span'); if (sp) sp.textContent = msg; }
+  el.classList.add('show'); setTimeout(() => el.classList.remove('show'), 2800);
+}
+
+// ── PWA ──
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault(); deferredInstallPrompt = e;
+  if (!localStorage.getItem('pointer_install_dismissed')) document.getElementById('install-prompt').style.display = 'block';
+});
+document.getElementById('install-btn').addEventListener('click', async () => {
+  if (!deferredInstallPrompt) return;
+  deferredInstallPrompt.prompt();
+  await deferredInstallPrompt.userChoice;
+  deferredInstallPrompt = null; document.getElementById('install-prompt').style.display = 'none';
+});
+document.getElementById('install-dismiss').addEventListener('click', () => {
+  document.getElementById('install-prompt').style.display = 'none';
+  localStorage.setItem('pointer_install_dismissed', '1');
+});
+window.addEventListener('appinstalled', () => { document.getElementById('install-prompt').style.display = 'none'; });
+
+init();
+</script>
+</body>
+</html>
