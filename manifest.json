@@ -1,7 +1,7 @@
 {
-  "name": "Pointer — Know what's in it",
-  "short_name": "Pointer",
-  "description": "Paste, photograph, or upload an ingredient list. Pointer tells you what each ingredient actually is.",
+  "name": "Wutzinit — Know what's in it",
+  "short_name": "Wutzinit",
+  "description": "Paste, photograph, or upload an ingredient list. Wutzinit tells you what each ingredient actually is.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#FAFAF8",
